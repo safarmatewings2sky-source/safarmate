@@ -86,7 +86,7 @@ export default function Header({ onOpenLeadModal }: HeaderProps) {
                   </Link>
                 </NavigationMenuItem>
 
-                <NavigationMenuItem>
+                {/* <NavigationMenuItem>
                   <NavigationMenuTrigger className="text-sm font-medium cursor-pointer hover:bg-black hover:text-white data-[state=open]:bg-black data-[state=open]:text-white">
                     Categories
                   </NavigationMenuTrigger>
@@ -124,7 +124,7 @@ export default function Header({ onOpenLeadModal }: HeaderProps) {
                       </Link>
                     </div>
                   </NavigationMenuContent>
-                </NavigationMenuItem>
+                </NavigationMenuItem> */}
 
                 <NavigationMenuItem>
                   <Link href="#about" legacyBehavior passHref>
