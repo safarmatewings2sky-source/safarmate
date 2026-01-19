@@ -17,7 +17,7 @@ export default function AboutSection({ onOpenLeadModal }: AboutSectionProps) {
           {/* Image */}
           <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden shadow-xl">
             <Image
-              src="/business-backpack-black.jpg"
+              src="/leather-safarmate.png"
               alt="About SafarMate"
               fill
               className="object-cover"

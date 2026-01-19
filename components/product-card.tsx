@@ -26,7 +26,7 @@ interface Product {
 export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/products/${product._id}`} className="cursor-pointer">
-      <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border/60 hover:border-primary/50 h-full flex flex-col cursor-pointer gap-3 sm:gap-4 py-0 bg-card/95">
+      <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border/60 hover:border-primary/50 h-full flex flex-col cursor-pointer gap-3 sm:gap-4 py-3 sm:py-4 bg-card/95 hover:-translate-y-1 pt-0">
         {/* Product Image */}
         <div className="relative w-full aspect-[4/5] overflow-hidden rounded-xl bg-muted">
           <Image
@@ -40,7 +40,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Product Info */}
-        <div className="px-4 pb-3 pt-3 sm:px-5 flex-1 flex flex-col">
+        <div className="px-4 pb-3 pt-1 sm:px-5 flex-1 flex flex-col">
           <div className="flex-1 space-y-3">
             <div>
               <h3 className="font-semibold text-lg sm:text-xl transition-colors break-words">

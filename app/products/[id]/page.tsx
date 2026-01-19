@@ -114,12 +114,12 @@ export default function ProductDetailPage() {
             {/* Product Images */}
             <div className="space-y-4">
               {/* Main Image */}
-              <div className="relative w-full rounded-lg overflow-hidden border border-input bg-muted aspect-[3/4] md:aspect-[4/5]">
+              <div className="relative aspect-square w-full rounded-lg overflow-hidden border border-input bg-muted">
                 <Image
                   src={product.images?.[selectedImageIndex] || product.images?.[0] || "/placeholder.svg"}
                   alt={product.name}
                   fill
-                  className="object-contain object-center"
+                  className="object-cover"
                   priority
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />

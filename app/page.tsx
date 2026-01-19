@@ -6,9 +6,6 @@ import Hero from "@/components/hero"
 import Features from "@/components/features"
 import Categories from "@/components/categories"
 import AboutSection from "@/components/about-section"
-import FAQSection from "@/components/faq-section"
-import TestimonialsSection from "@/components/testimonials-section"
-import PartnersSection from "@/components/partners-section"
 import Footer from "@/components/footer"
 import FloatingContact from "@/components/floating-contact"
 import LeadModal from "@/components/lead-modal"
@@ -24,9 +21,6 @@ export default function Home() {
         <Features />
         <Categories />
         <AboutSection onOpenLeadModal={() => setIsLeadModalOpen(true)} />
-        <FAQSection />
-        <TestimonialsSection />
-        <PartnersSection />
       </main>
       <Footer onOpenLeadModal={() => setIsLeadModalOpen(true)} />
       <FloatingContact />
