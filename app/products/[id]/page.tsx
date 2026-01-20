@@ -8,7 +8,7 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, CheckCircle2, Package, Truck, Shield, Info, Loader2 } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Package, Truck, Shield, Info, Loader2, ZoomIn, ChevronLeft, ChevronRight } from "lucide-react"
 import InquiryModal from "@/components/inquiry-modal"
 
 interface Product {
@@ -38,6 +38,7 @@ export default function ProductDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isZoomed, setIsZoomed] = useState(false)
 
   useEffect(() => {
     async function fetchProduct() {
@@ -60,14 +61,29 @@ export default function ProductDetailPage() {
     }
   }, [productId])
 
+  const nextImage = () => {
+    if (product?.images) {
+      setSelectedImageIndex((prev) => (prev + 1) % product.images.length)
+    }
+  }
+
+  const prevImage = () => {
+    if (product?.images) {
+      setSelectedImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length)
+    }
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10 flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Loading product details...</p>
+            <div className="relative">
+              <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
+              <div className="absolute inset-0 animate-ping bg-primary/20 rounded-full"></div>
+            </div>
+            <p className="text-muted-foreground animate-pulse">Loading product details...</p>
           </div>
         </main>
         <Footer />
@@ -77,14 +93,21 @@ export default function ProductDetailPage() {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10 flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-4 max-w-md mx-auto px-4">
-            <Info className="h-12 w-12 text-muted-foreground mx-auto" />
-            <h1 className="text-2xl font-bold">Product Not Found</h1>
+            <div className="relative inline-block">
+              <Info className="h-16 w-16 text-muted-foreground mx-auto" />
+              <div className="absolute -inset-4 bg-destructive/10 rounded-full animate-pulse"></div>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Product Not Found</h1>
             <p className="text-muted-foreground">{error || "The product you're looking for doesn't exist."}</p>
-            <Button onClick={() => router.push("/")} variant="outline" className="cursor-pointer">
+            <Button 
+              onClick={() => router.push("/")} 
+              variant="outline" 
+              className="cursor-pointer mt-4 hover:scale-105 transition-transform"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Home
             </Button>
@@ -96,7 +119,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10 flex flex-col">
       <Header />
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 md:py-12">
@@ -104,169 +127,254 @@ export default function ProductDetailPage() {
           <Button
             variant="ghost"
             onClick={() => router.back()}
-            className="mb-6 cursor-pointer"
+            className="mb-6 cursor-pointer group hover:bg-primary/10 transition-all duration-200"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
             Back to Products
           </Button>
 
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Product Images */}
-            <div className="space-y-4">
-              {/* Main Image */}
-              <div className="relative aspect-[3/4] md:aspect-[4/5] w-full rounded-lg overflow-hidden border border-input bg-muted">
-                <Image
-                  src={product.images?.[selectedImageIndex] || product.images?.[0] || "/placeholder.svg"}
-                  alt={product.name}
-                  fill
-                  className="object-contain"
-                  priority
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
+            {/* Product Images Section */}
+            <div className="space-y-6">
+              {/* Main Image Container */}
+              <div className="relative group">
+                <div 
+                  className={`relative w-full h-[320px] sm:h-[360px] md:h-[400px] lg:h-[440px] rounded-2xl overflow-hidden border-2 border-input bg-gradient-to-br from-secondary/20 to-background shadow-lg transition-all duration-300 ${
+                    isZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in hover:shadow-xl'
+                  }`}
+                  onClick={() => setIsZoomed(!isZoomed)}
+                >
+                  <Image
+                    src={product.images?.[selectedImageIndex] || product.images?.[0] || "/placeholder.svg"}
+                    alt={product.name}
+                    fill
+                    className={`object-contain transition-transform duration-300 ${
+                      isZoomed ? 'scale-110' : 'group-hover:scale-105'
+                    }`}
+                    priority
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  
+                  {/* Zoom Indicator */}
+                  <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm p-2 rounded-full border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <ZoomIn className="h-5 w-5 text-muted-foreground" />
+                  </div>
+
+                  {/* Navigation Arrows */}
+                  {product.images && product.images.length > 1 && (
+                    <>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-background/80 backdrop-blur-sm border shadow-lg hover:scale-110"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          prevImage()
+                        }}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="secondary"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-background/80 backdrop-blur-sm border shadow-lg hover:scale-110"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          nextImage()
+                        }}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </Button>
+                    </>
+                  )}
+
+                  {/* Image Counter */}
+                  {product.images && product.images.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full border shadow-sm text-sm font-medium">
+                      {selectedImageIndex + 1} / {product.images.length}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Thumbnail Images */}
               {product.images && product.images.length > 1 && (
-                <div className="grid grid-cols-4 gap-2">
-                  {product.images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImageIndex(index)}
-                      className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all cursor-pointer ${
-                        selectedImageIndex === index
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "border-input hover:border-primary/50"
-                      }`}
-                    >
-                      <Image
-                        src={image}
-                        alt={`${product.name} - Image ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 25vw, 12.5vw"
-                      />
-                    </button>
-                  ))}
+                <div className="relative">
+                  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                    {product.images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImageIndex(index)}
+                        className={`relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition-all duration-200 cursor-pointer group ${
+                          selectedImageIndex === index
+                            ? "border-primary ring-4 ring-primary/20 shadow-lg scale-105"
+                            : "border-input hover:border-primary/50 hover:scale-105 hover:shadow-md"
+                        }`}
+                      >
+                        <Image
+                          src={image}
+                          alt={`${product.name} - Image ${index + 1}`}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-110"
+                          sizes="(max-width: 768px) 25vw, 12.5vw"
+                        />
+                        {selectedImageIndex === index && (
+                          <div className="absolute inset-0 bg-primary/20"></div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  {/* Gradient fade edges */}
+                  <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none"></div>
+                  <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none"></div>
                 </div>
               )}
             </div>
 
             {/* Product Info */}
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-3xl md:text-4xl font-bold mb-4">{product.name}</h1>
-                <p className="text-lg text-muted-foreground leading-relaxed">{product.description}</p>
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20 mb-2">
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">In Stock</span>
+                </div>
+                
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                  {product.name}
+                </h1>
+                
+                <p className="text-lg text-muted-foreground leading-relaxed border-l-4 border-primary/20 pl-4 py-1">
+                  {product.description}
+                </p>
               </div>
 
-              {/* Price and MOQ */}
-              <div className="flex items-baseline gap-4 p-6 bg-primary/5 rounded-lg border border-primary/20">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-1">Starting from</p>
-                  <p className="text-4xl font-bold text-primary">₹{product.basePrice.toFixed(2)}</p>
+              {/* Price and MOQ Card */}
+              <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 shadow-lg">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Starting from</p>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl md:text-5xl font-bold text-primary">₹{product.basePrice.toFixed(2)}</span>
+                      <span className="text-sm text-muted-foreground">/ piece</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1 text-right">
+                    <p className="text-sm font-medium text-muted-foreground">Minimum Order Quantity</p>
+                    <div className="flex items-center gap-2">
+                      <Package className="h-5 w-5 text-primary" />
+                      <span className="text-2xl font-bold">{product.moq} pieces</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-auto text-right">
-                  <p className="text-sm text-muted-foreground mb-1">Minimum Order</p>
-                  <p className="text-xl font-semibold">{product.moq} pieces</p>
-                </div>
-              </div>
+              </Card>
 
               {/* Available Colors */}
               {product.colors && product.colors.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Available Colors</h3>
-                  <div className="flex flex-wrap gap-2">
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary"></div>
+                    Available Colors
+                  </h3>
+                  <div className="flex flex-wrap gap-3">
                     {product.colors.map((color, index) => (
-                      <span
+                      <div
                         key={index}
-                        className="px-4 py-2 bg-primary/10 text-primary font-medium rounded-full border border-primary/20"
+                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-secondary/20 to-secondary/10 rounded-full border hover:scale-105 transition-transform duration-200 cursor-pointer group"
                       >
-                        {color}
-                      </span>
+                        <div 
+                          className="w-4 h-4 rounded-full border"
+                          style={{ backgroundColor: color.toLowerCase() }}
+                        />
+                        <span className="font-medium text-sm group-hover:text-primary transition-colors">
+                          {color}
+                        </span>
+                      </div>
                     ))}
                   </div>
-                </div>
+                </Card>
               )}
 
               {/* Specifications */}
               {product.specifications && (
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Specifications</h3>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {product.specifications.material && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Material</p>
-                        <p className="font-medium">{product.specifications.material}</p>
-                      </div>
-                    )}
-                    {product.specifications.capacity && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Capacity</p>
-                        <p className="font-medium">{product.specifications.capacity}</p>
-                      </div>
-                    )}
-                    {product.specifications.weight && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Weight</p>
-                        <p className="font-medium">{product.specifications.weight}</p>
-                      </div>
-                    )}
-                    {product.specifications.compartments && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-1">Compartments</p>
-                        <p className="font-medium">{product.specifications.compartments}</p>
-                      </div>
-                    )}
-                    {product.specifications.warranty && (
-                      <div className="sm:col-span-2">
-                        <p className="text-sm text-muted-foreground mb-1">Warranty</p>
-                        <p className="font-medium">{product.specifications.warranty}</p>
-                      </div>
-                    )}
+                <Card className="p-6 overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-primary/50 to-transparent"></div>
+                  <h3 className="text-lg font-semibold mb-6">Product Specifications</h3>
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    {Object.entries(product.specifications).map(([key, value]) => (
+                      value && (
+                        <div 
+                          key={key}
+                          className="space-y-1 p-3 rounded-lg hover:bg-secondary/20 transition-colors duration-200"
+                        >
+                          <p className="text-sm font-medium text-muted-foreground capitalize">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                          </p>
+                          <p className="font-medium text-lg">{value}</p>
+                        </div>
+                      )
+                    ))}
                   </div>
                 </Card>
               )}
 
               {/* Features */}
               <div className="grid sm:grid-cols-3 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-card rounded-lg border">
-                  <Package className="h-5 w-5 text-primary flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-sm">Bulk Orders</p>
-                    <p className="text-xs text-muted-foreground">MOQ: {product.moq}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 bg-card rounded-lg border">
-                  <Truck className="h-5 w-5 text-primary flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-sm">Fast Shipping</p>
-                    <p className="text-xs text-muted-foreground">Worldwide</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 bg-card rounded-lg border">
-                  <Shield className="h-5 w-5 text-primary flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-sm">Quality Assured</p>
-                    <p className="text-xs text-muted-foreground">
-                      {product.specifications?.warranty || "Standard"}
-                    </p>
-                  </div>
-                </div>
+                {[
+                  {
+                    icon: Package,
+                    title: "Bulk Orders",
+                    description: `MOQ: ${product.moq}`,
+                    gradient: "from-blue-500/20 to-blue-600/10"
+                  },
+                  {
+                    icon: Truck,
+                    title: "Fast Shipping",
+                    description: "Worldwide Delivery",
+                    gradient: "from-green-500/20 to-green-600/10"
+                  },
+                  {
+                    icon: Shield,
+                    title: "Quality Assured",
+                    description: product.specifications?.warranty || "Standard Warranty",
+                    gradient: "from-amber-500/20 to-amber-600/10"
+                  }
+                ].map((feature, index) => (
+                  <Card 
+                    key={index}
+                    className="p-4 border hover:border-primary/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg bg-gradient-to-br ${feature.gradient}`}>
+                        <feature.icon className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{feature.title}</p>
+                        <p className="text-xs text-muted-foreground">{feature.description}</p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Button
-              size="lg"
-              className="flex-1 cursor-pointer"
-              onClick={() => setIsModalOpen(true)}
-            >
-              Request Quote
-            </Button>
-            <Link href="/contact" className="flex-1 cursor-pointer">
-              <Button size="lg" variant="outline" className="w-full cursor-pointer">
-                Contact Sales
-              </Button>
-            </Link>
+              <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                <Button
+                  size="lg"
+                  className="flex-1 cursor-pointer bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+                  onClick={() => setIsModalOpen(true)}
+                >
+                  Request Quote
+                </Button>
+                <Link href="/contact" className="flex-1 cursor-pointer">
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="w-full cursor-pointer border-2 hover:border-primary hover:bg-primary/10 hover:scale-105 transition-all duration-200"
+                  >
+                    Contact Sales
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

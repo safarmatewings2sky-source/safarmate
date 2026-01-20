@@ -28,7 +28,7 @@ export default function ProductCard({ product }: { product: Product }) {
     <Link href={`/products/${product._id}`} className="cursor-pointer">
       <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border/60 hover:border-primary/50 h-full flex flex-col cursor-pointer gap-3 sm:gap-4 py-0 bg-card/95">
         {/* Product Image */}
-        <div className="relative w-full aspect-[4/5] overflow-hidden rounded-xl bg-muted">
+        <div className="relative w-full aspect-[4/5] overflow-hidden rounded-xl">
           <Image
             src={product.images?.[0] || "/placeholder.svg"}
             alt={product.name}

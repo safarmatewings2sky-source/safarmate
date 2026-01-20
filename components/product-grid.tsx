@@ -107,7 +107,7 @@ export default function ProductGrid({ categoryId }: ProductGridProps) {
       onMouseEnter={() => setShowButtons(true)}
       onMouseLeave={() => setShowButtons(false)}
     >
-      {/* Scroll Buttons - Swiper-like navigation */}
+      {/* Scroll Buttons - Swiper-like navigation (desktop only) */}
       {products.length > 3 && (
         <>
           {canScrollLeft && (
@@ -115,7 +115,7 @@ export default function ProductGrid({ categoryId }: ProductGridProps) {
               variant="outline"
               size="icon"
               onClick={() => scroll("left")}
-              className={`absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/95 backdrop-blur-sm shadow-lg hover:bg-background border cursor-pointer transition-opacity ${
+              className={`hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/95 backdrop-blur-sm shadow-lg hover:bg-background border cursor-pointer transition-opacity ${
                 showButtons ? "opacity-100" : "opacity-0"
               }`}
               aria-label="Scroll left"
@@ -128,7 +128,7 @@ export default function ProductGrid({ categoryId }: ProductGridProps) {
               variant="outline"
               size="icon"
               onClick={() => scroll("right")}
-              className={`absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/95 backdrop-blur-sm shadow-lg hover:bg-background border cursor-pointer transition-opacity ${
+              className={`hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-background/95 backdrop-blur-sm shadow-lg hover:bg-background border cursor-pointer transition-opacity ${
                 showButtons ? "opacity-100" : "opacity-0"
               }`}
               aria-label="Scroll right"
@@ -142,7 +142,7 @@ export default function ProductGrid({ categoryId }: ProductGridProps) {
       {/* Scrollable Product Grid - Swiper-like horizontal scroll */}
       <div
         ref={scrollContainerRef}
-        className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar px-1"
+        className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth hide-scrollbar px-1 justify-center md:justify-start"
         style={{
           scrollbarWidth: "none",
           msOverflowStyle: "none",
@@ -150,7 +150,10 @@ export default function ProductGrid({ categoryId }: ProductGridProps) {
         }}
       >
         {products.map((product) => (
-          <div key={product._id} className="min-w-[300px] max-w-[300px] snap-start flex-shrink-0">
+          <div
+            key={product._id}
+            className="snap-center flex-shrink-0 w-[85%] sm:w-[260px] md:w-[300px] mx-auto md:mx-0"
+          >
             <ProductCard product={product} />
           </div>
         ))}

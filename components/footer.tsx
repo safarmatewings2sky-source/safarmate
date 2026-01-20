@@ -77,7 +77,7 @@ export default function Footer({ onOpenLeadModal }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href="#about"
+                  href="/#about"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
                   About Us

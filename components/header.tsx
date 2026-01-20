@@ -127,7 +127,7 @@ export default function Header({ onOpenLeadModal }: HeaderProps) {
                 </NavigationMenuItem> */}
 
                 <NavigationMenuItem>
-                  <Link href="#about" legacyBehavior passHref>
+                  <Link href="/#about" legacyBehavior passHref>
                     <NavigationMenuLink className="text-sm font-medium hover:bg-black hover:text-white px-3 py-2 rounded-md transition-colors cursor-pointer">
                       About
                     </NavigationMenuLink>
@@ -178,53 +178,9 @@ export default function Header({ onOpenLeadModal }: HeaderProps) {
                 >
                   Home
                 </Link>
-                <div className="space-y-2">
-                  <p className="text-lg font-medium mb-2 px-3">Categories</p>
-                  <Link
-                    href="#categories"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2 text-sm text-muted-foreground hover:bg-black hover:text-white px-3 rounded-md transition-colors"
-                  >
-                    School Bags
-                  </Link>
-                  <Link
-                    href="#categories"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2 text-sm text-muted-foreground hover:bg-black hover:text-white px-3 rounded-md transition-colors"
-                  >
-                    Travel Bags
-                  </Link>
-                  <Link
-                    href="#categories"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2 text-sm text-muted-foreground hover:bg-black hover:text-white px-3 rounded-md transition-colors"
-                  >
-                    Trekking Bags
-                  </Link>
-                  <Link
-                    href="#categories"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2 text-sm text-muted-foreground hover:bg-black hover:text-white px-3 rounded-md transition-colors"
-                  >
-                    Business Bags
-                  </Link>
-                  <Link
-                    href="#categories"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2 text-sm text-muted-foreground hover:bg-black hover:text-white px-3 rounded-md transition-colors"
-                  >
-                    Outdoor Bags
-                  </Link>
-                  <Link
-                    href="#categories"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block py-2 text-sm text-muted-foreground hover:bg-black hover:text-white px-3 rounded-md transition-colors"
-                  >
-                    Laptop Bags
-                  </Link>
-                </div>
+          
                 <Link
-                  href="#about"
+                  href="/#about"
                   onClick={() => setMobileMenuOpen(false)}
                   className="text-lg font-medium hover:bg-black hover:text-white px-3 py-2 rounded-md transition-colors"
                 >
@@ -244,10 +200,10 @@ export default function Header({ onOpenLeadModal }: HeaderProps) {
                     </Button>
                   </Link>
                   {onOpenLeadModal ? (
-                    <Button className="w-full" onClick={() => { setMobileMenuOpen(false); onOpenLeadModal(); }}>Get Quote</Button>
+                    <Button size="sm" className="w-full" onClick={() => { setMobileMenuOpen(false); onOpenLeadModal(); }}>Get Quote</Button>
                   ) : (
                     <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
-                      <Button className="w-full">Get Quote</Button>
+                      <Button size="sm" className="w-full">Get Quote</Button>
                     </Link>
                   )}
                 </div>

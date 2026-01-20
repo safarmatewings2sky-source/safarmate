@@ -44,7 +44,7 @@ export default function ProductManager() {
     },
   })
   const [loading, setLoading] = useState(false)
-  const [uploading, setUploading] = useState<number | null>(null)
+  const [imageFiles, setImageFiles] = useState<(File | null)[]>([])
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -69,46 +69,35 @@ export default function ProductManager() {
     return category ? category.name : "Unknown Category"
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, index?: number) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    const uploadIndex = index ?? formData.images.length
-    setUploading(uploadIndex)
+    const previewUrl = URL.createObjectURL(file)
 
-    try {
-      const formDataUpload = new FormData()
-      formDataUpload.append("file", file)
+    const newImages = [...formData.images]
+    const newImageFiles = [...imageFiles]
 
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formDataUpload,
-      })
-
-      const data = await response.json()
-
-      if (response.ok && data.url) {
-        const newImages = [...formData.images]
-        if (index !== undefined) {
-          newImages[index] = data.url
-        } else {
-          newImages.push(data.url)
-        }
-        setFormData({ ...formData, images: newImages })
-      } else {
-        alert(data.error || "Failed to upload image")
-      }
-    } catch (error) {
-      console.error("Upload error:", error)
-      alert("Failed to upload image")
-    } finally {
-      setUploading(null)
+    if (index !== undefined) {
+      newImages[index] = previewUrl
+      newImageFiles[index] = file
+    } else {
+      newImages.push(previewUrl)
+      newImageFiles.push(file)
     }
+
+    setFormData({ ...formData, images: newImages })
+    setImageFiles(newImageFiles)
+
+    // Allow selecting the same file again if needed
+    e.target.value = ""
   }
 
   const removeImage = (index: number) => {
     const newImages = formData.images.filter((_, i) => i !== index)
+    const newImageFiles = imageFiles.filter((_, i) => i !== index)
     setFormData({ ...formData, images: newImages })
+    setImageFiles(newImageFiles)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -123,6 +112,52 @@ export default function ProductManager() {
     setLoading(true)
 
     try {
+      // Prepare final image URLs: upload any new files to Cloudinary, reuse existing URLs
+      let finalImageUrls: string[] = []
+      const hasNewImages = imageFiles.some((file) => file)
+
+      if (hasNewImages) {
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+
+        if (!cloudName || !uploadPreset) {
+          console.error("Cloudinary env vars NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME or NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET are missing")
+          alert("Image upload is not configured. Please contact the site administrator.")
+          return
+        }
+
+        for (let i = 0; i < formData.images.length; i++) {
+          const file = imageFiles[i]
+          if (file) {
+            const uploadForm = new FormData()
+            uploadForm.append("file", file)
+            uploadForm.append("upload_preset", uploadPreset)
+
+            const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+              method: "POST",
+              body: uploadForm,
+            })
+
+            const uploadData = await uploadResponse.json()
+
+            if (uploadResponse.ok && uploadData.secure_url) {
+              finalImageUrls.push(uploadData.secure_url as string)
+            } else {
+              console.error("Cloudinary upload failed", uploadData)
+              alert(uploadData.error?.message || "Failed to upload image to Cloudinary")
+              return
+            }
+          } else {
+            const existingUrl = formData.images[i]
+            if (existingUrl) {
+              finalImageUrls.push(existingUrl)
+            }
+          }
+        }
+      } else {
+        finalImageUrls = formData.images.filter(Boolean)
+      }
+
       const url = editingProductId 
         ? `/api/admin/products?_id=${editingProductId}`
         : "/api/admin/products"
@@ -134,7 +169,7 @@ export default function ProductManager() {
         credentials: "include",
         body: JSON.stringify({
           ...formData,
-          images: formData.images.filter(Boolean),
+          images: finalImageUrls,
           colors: formData.colors.filter(Boolean),
           ...(editingProductId && { _id: editingProductId }),
         }),
@@ -157,6 +192,7 @@ export default function ProductManager() {
             warranty: "",
           },
         })
+        setImageFiles([])
         setEditingProductId(null)
         await fetchData()
         alert(editingProductId ? "Product updated successfully!" : "Product added successfully!")
@@ -190,6 +226,7 @@ export default function ProductManager() {
         warranty: (product as any).specifications?.warranty || "",
       },
     })
+    setImageFiles(new Array((product.images || []).length).fill(null))
     // Scroll to form
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
@@ -212,6 +249,7 @@ export default function ProductManager() {
         warranty: "",
       },
     })
+    setImageFiles([])
   }
 
   const handleDelete = async (productId: string) => {
@@ -365,23 +403,15 @@ export default function ProductManager() {
                 </div>
               ))}
               <label className="relative aspect-square border-2 border-dashed border-input rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
-                {uploading === formData.images.length ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <Upload className="h-8 w-8 text-muted-foreground animate-pulse" />
-                    <span className="text-xs text-muted-foreground">Uploading...</span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">Add Image</span>
-                  </div>
-                )}
+                <div className="flex flex-col items-center gap-2">
+                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Add Image</span>
+                </div>
                 <Input
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleImageUpload(e)}
                   className="hidden"
-                  disabled={uploading !== null}
                 />
               </label>
             </div>
@@ -518,14 +548,14 @@ export default function ProductManager() {
                 type="button"
                 variant="outline"
                 onClick={handleCancelEdit}
-                disabled={loading || uploading !== null}
+                disabled={loading}
                 className="flex-1"
                 size="lg"
               >
                 Cancel
               </Button>
             )}
-            <Button type="submit" disabled={loading || uploading !== null} className={editingProductId ? "flex-1" : "w-full"} size="lg">
+            <Button type="submit" disabled={loading} className={editingProductId ? "flex-1" : "w-full"} size="lg">
               {loading 
                 ? (editingProductId ? "Updating..." : "Adding...") 
                 : (editingProductId ? "Update Product" : "Add Product")
